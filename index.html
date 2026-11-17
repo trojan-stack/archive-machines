@@ -149,7 +149,8 @@
   .chip.rare{ background:var(--rare); color:#fff; }
   .chip.epic{ background:var(--epic); color:#fff; }
   .chip.legendary{ background:var(--legendary); }
-  .chip.selected{ outline:3px solid #fff; outline-offset:2px; }
+  .chip.in-range{ outline:2px solid #ff3d81; outline-offset:2px; box-shadow:0 0 0 4px rgba(255,61,129,.35), 0 0 14px rgba(255,61,129,.6); }
+.chip.selected{ outline:4px solid #fff; outline-offset:2px; box-shadow:0 0 0 7px rgba(255,255,255,.35), 0 0 22px rgba(255,255,255,.85); }
   .chip.taken{ opacity:.28; pointer-events:none; }
 .chip{ position:relative; overflow:hidden; }
 .chip.rare{ box-shadow:inset 0 0 0 1px #BFDBFE, 0 0 8px rgba(59,130,246,.55); }
@@ -266,6 +267,7 @@
   .foot-line b{ color:var(--on-dark); }
   .status-line{ font-size:.82rem; margin-top:10px; min-height:1.3em; }
   .status-line.ok{ font-weight:700; }
+.btn.needs-connect{ opacity:.6; outline:2px dashed rgba(255,255,255,.8); outline-offset:2px; }
 
   @media (max-width: 1020px){
     .tiers{ grid-template-columns:repeat(2,1fr); }
@@ -352,7 +354,7 @@
       <div>
         <p class="kicker">Buy 1 Get 1 Free — and so on · No presale</p>
         <h1 class="display">One machine.<br />25,000 archives.<br /><span class="hl">Buy 1 Get 1 Free.</span></h1>
-        <p class="lede">Intinya simpel: <b>buy 1, gratis 1</b>. Buy 2, get 2 free. Buy 5, get 5 free. Buy 10, get 10 free — <b>dan seterusnya</b>. Every archive you buy comes with a free twin, taken straight from the next in line, from the same <b>25,000 archive archives</b>. Burn any archive, paid or free, and get <b>$ARCH</b> at its full tier value. <b>70%</b> of supply goes to archive burners, <b>20%</b> seeds liquidity, <b>10%</b> is for the community. Every trade pays holders in ETH, every hour.</p>
+        <p class="lede">Intinya simpel: <b>buy 1, gratis 1</b>. Buy 2, get 2 free. Buy 5, get 5 free. Buy 10, get 10 free — <b>dan seterusnya</b>. Every archive you buy comes with a free twin, taken straight from the next in line, from the same <b>25,000 archives</b>. Burn any archive, paid or free, and get <b>$ARCH</b> at its full tier value. <b>70%</b> of supply goes to archive burners, <b>20%</b> seeds liquidity, <b>10%</b> is for the community. Every trade pays holders in ETH, every hour.</p>
         <div class="hero-cta">
           <a class="btn btn-black" href="#claim">Buy 1 · Get 1 Free</a>
           <a class="btn btn-outline" href="#burn">Burn &amp; claim</a>
@@ -416,7 +418,7 @@
           <h2 class="display">The Line</h2>
           <p class="line-meta" style="margin-top:12px;"><span class="left" style="color:var(--ink);"><span id="bagsLeftText">11,547</span> ARCHIVES LEFT</span> · <span class="next">NEXT LEGENDARY: <b style="color:var(--ink);">ARCHIVE #13,495</b> (41 BACK)</span></p>
         </div>
-        <p class="sec-note">Every archive already has its tier, set before the first mint and stored on-chain for anyone to read. These are the next 50 in the queue. Buy from here and the deal is automatic: <b>buy 1 get 1 free, buy 2 get 2 free, and so on</b> — your free twins are the archives right after the ones you paid for. Tap a archive to start from it.</p>
+        <p class="sec-note">Every archive already has its tier, set before the first mint and stored on-chain for anyone to read. These are the next 50 in the queue. Buy from here and the deal is automatic: <b>buy 1 get 1 free, buy 2 get 2 free, and so on</b> — your free twins are the archives right after the ones you paid for. Tap an archive to start from it.</p>
       </div>
 
       <div class="line-panel">
@@ -465,7 +467,7 @@
               <div class="sa-sub" id="skipArtSub">The machine waiting at the front of the line.</div>
             </div>
           </div>
-          <div class="slider-row"><label for="skipRange">You buy:</label><span class="v"><span id="skipCount">1</span> archive</span></div>
+          <div class="slider-row"><label for="skipRange">You buy:</label><span class="v"><span id="skipCount">1 archive</span></span></div>
           <input type="range" id="skipRange" min="1" max="10" step="1" value="1" aria-label="How many archives to buy — you get the same number free" />
           <div class="rows">
             <div class="row"><span>You buy</span><span class="v" id="skipBuyCount">1</span></div>
@@ -775,24 +777,27 @@ function demoMintOpen(){ return (Date.now()-t0) < MINT_MS; }
 function demoBurnOpen(){ return (Date.now()-t0) < BURN_MS; }
 function demoTotalInv(){ return state.inv.common+state.inv.rare+state.inv.epic+state.inv.legendary; }
 function demoInvValue(){ return state.inv.common*3000+state.inv.rare*9000+state.inv.epic*30000+state.inv.legendary*160000; }
+function nudgeDemoConnect(){
+  var cb=$("connectBtn"); if(cb) cb.scrollIntoView({behavior:"smooth", block:"center"});
+}
 function demoRefreshButtons(){
  var total=demoTotalInv();
- var skip=$("skipBtn"); if(skip) skip.disabled=!state.connected;
- var free=$("claimFreeBtn"); if(free) free.disabled=!state.connected;
+ var skip=$("skipBtn"); if(skip){ skip.disabled=false; skip.classList.toggle("needs-connect", !state.connected); skip.setAttribute("aria-disabled", String(!state.connected)); }
+ var free=$("claimFreeBtn"); if(free){ free.disabled=false; free.classList.toggle("needs-connect", !state.connected); free.setAttribute("aria-disabled", String(!state.connected)); }
  var w=$("demoWaiting"); if(w) w.textContent=fmt(state.waiting);
  var dc=$("demoClaimed"); if(dc) dc.textContent=fmt(state.claimed)+" $ARCH";
  var burn=$("burnBtn");
  if(burn){
-  if(!demoBurnOpen()){ burn.disabled=true; burn.textContent="Burn closed (demo)"; }
-  else if(!state.connected){ burn.disabled=true; burn.textContent="Connect demo wallet to burn"; }
-  else if(total===0){ burn.disabled=true; burn.textContent=state.claimable>0?"All archives burned (demo)":"No archives to burn yet (demo)"; }
-  else{ burn.disabled=false; burn.textContent="Burn "+total+" archive"+(total===1?"":"s")+" - "+fmt(demoInvValue())+" $ARCH (demo)"; }
+  if(!demoBurnOpen()){ burn.disabled=true; burn.classList.remove("needs-connect"); burn.textContent="Burn closed (demo)"; }
+  else if(!state.connected){ burn.disabled=false; burn.classList.add("needs-connect"); burn.setAttribute("aria-disabled","true"); burn.textContent="Connect demo wallet to burn"; }
+  else if(total===0){ burn.disabled=true; burn.classList.remove("needs-connect"); burn.textContent=state.claimable>0?"All archives burned (demo)":"No archives to burn yet (demo)"; }
+  else{ burn.disabled=false; burn.classList.remove("needs-connect"); burn.setAttribute("aria-disabled","false"); burn.textContent="Burn "+total+" archive"+(total===1?"":"s")+" - "+fmt(demoInvValue())+" $ARCH (demo)"; }
  }
  var claim=$("claimBtn");
  if(claim){
-  if(!state.connected){ claim.disabled=true; claim.textContent="Connect demo wallet to claim"; }
-  else if(state.claimable<=0){ claim.disabled=true; claim.textContent="Nothing to claim yet (demo)"; }
-  else{ claim.disabled=false; claim.textContent="Claim "+fmt(state.claimable)+" $ARCH (demo)"; }
+  if(!state.connected){ claim.disabled=false; claim.classList.add("needs-connect"); claim.setAttribute("aria-disabled","true"); claim.textContent="Connect demo wallet to claim"; }
+  else if(state.claimable<=0){ claim.disabled=true; claim.classList.remove("needs-connect"); claim.textContent="Nothing to claim yet (demo)"; }
+  else{ claim.disabled=false; claim.classList.remove("needs-connect"); claim.setAttribute("aria-disabled","false"); claim.textContent="Claim "+fmt(state.claimable)+" $ARCH (demo)"; }
  }
  var cb=$("connectBtn"); if(cb) cb.textContent=state.connected?DEMO_ADDR:"Connect Demo Wallet";
  var wn=$("walletNote"); if(wn) wn.textContent=state.connected?"Demo wallet connected: "+DEMO_ADDR+" (simulasi, bukan wallet sungguhan). Mint, burn, dan klaim di bawah ini adalah demo.":"Demo wallet belum terhubung. Klik Connect Wallet untuk simulasi demo, tanpa MetaMask dan tanpa transaksi sungguhan.";
@@ -846,8 +851,6 @@ setInterval(function(){ var d=(Math.random()-0.5)*0.02; state.archPrice=Math.max
     updateSkip();
     if (fromTap){
       $("skipStatus").textContent = "Archive #" + (START + idx) + " selected — buy from here and you get the same number free: buy 1 get 1 free, and so on.";
-      $("skipRange").value = 1;
-      $("skipCount").textContent = "1";
       updateSkip();
     }
   }
@@ -888,7 +891,10 @@ setInterval(function(){ var d=(Math.random()-0.5)*0.02; state.archPrice=Math.max
     var total = n * 2;
     var idx = state.selected;
     var t = tierAt(idx);
+    var rangeEnd = Math.min(idx + total - 1, 49);
+    chipBtns.forEach(function(b, j){ b.classList.toggle("in-range", j >= idx && j <= rangeEnd); });
     var buyEl = $("skipBuyCount"); if (buyEl) buyEl.textContent = n + (n === 1 ? " archive" : " archives");
+  var scEl = $("skipCount"); if (scEl) scEl.textContent = n + (n === 1 ? " archive" : " archives");
     var bonusEl = $("skipBonus"); if (bonusEl) bonusEl.textContent = "+" + n + " FREE";
     var totalEl = $("skipTotal"); if (totalEl) totalEl.textContent = total + " archives";
     $("skipFirst").textContent = "#" + (START + idx) + " – #" + (START + idx + total - 1) + " (" + n + " paid + " + n + " free)";
@@ -922,7 +928,7 @@ setInterval(function(){ var d=(Math.random()-0.5)*0.02; state.archPrice=Math.max
   }
   $("skipBtn").addEventListener("click", function(){
  var statusEl=$("skipStatus");
- if(!state.connected){ if(statusEl) statusEl.textContent="Demo: hubungkan demo wallet dulu sebelum Skip the Line (simulasi)."; return; }
+ if(!state.connected){ if(statusEl) statusEl.textContent="Demo: hubungkan demo wallet dulu sebelum Skip the Line (simulasi)."; nudgeDemoConnect(); return; }
  var n=parseInt($("skipRange").value,10);
  var total=n*2;
  var startIdx=state.selected;
@@ -940,7 +946,7 @@ setInterval(function(){ var d=(Math.random()-0.5)*0.02; state.archPrice=Math.max
   /* ----- Burn ----- */
   $("burnBtn").addEventListener("click", function(){
  var total=demoTotalInv();
- if(!state.connected){ $("burnStatus").textContent="Demo: hubungkan demo wallet dulu untuk burn (simulasi)."; return; }
+ if(!state.connected){ $("burnStatus").textContent="Demo: hubungkan demo wallet dulu untuk burn (simulasi)."; nudgeDemoConnect(); return; }
  if(!demoBurnOpen()){ $("burnStatus").textContent="Demo: jendela burn sudah tutup (simulasi)."; demoRefreshButtons(); return; }
  if(total===0) return;
  var val=demoInvValue();
@@ -952,7 +958,7 @@ setInterval(function(){ var d=(Math.random()-0.5)*0.02; state.archPrice=Math.max
 
   $("claimBtn").addEventListener("click", function(){
  var st=$("demoClaimStatus");
- if(!state.connected){ if(st) st.textContent="Demo: hubungkan demo wallet dulu untuk klaim (simulasi)."; return; }
+ if(!state.connected){ if(st) st.textContent="Demo: hubungkan demo wallet dulu untuk klaim (simulasi)."; nudgeDemoConnect(); return; }
  if(state.claimable<=0){ if(st) st.textContent="Demo: belum ada $ARCH yang bisa diklaim (simulasi)."; return; }
  var amt=state.claimable; state.claimed+=amt; state.claimable=0;
  refreshCounts(); demoSave(); demoRefreshButtons(); demoRefreshRewards();
@@ -960,7 +966,7 @@ setInterval(function(){ var d=(Math.random()-0.5)*0.02; state.archPrice=Math.max
 });
 $("claimFreeBtn").addEventListener("click", function(){
  var statusEl=$("claimStatus");
- if(!state.connected){ if(statusEl) statusEl.textContent="Demo: hubungkan demo wallet dulu untuk klaim free drop (simulasi)."; return; }
+ if(!state.connected){ if(statusEl) statusEl.textContent="Demo: hubungkan demo wallet dulu untuk klaim free drop (simulasi)."; nudgeDemoConnect(); return; }
  if(!demoMintOpen()){ if(statusEl) statusEl.textContent="Demo: jendela mint sudah tutup, free drop berhenti (simulasi)."; return; }
  if(state.waiting<=0){ if(statusEl) statusEl.textContent="Demo: belum ada free drop yang menunggu - tunggu beberapa detik (simulasi)."; return; }
  var before={common:state.inv.common,rare:state.inv.rare,epic:state.inv.epic,legendary:state.inv.legendary};
