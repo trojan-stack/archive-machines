@@ -300,6 +300,8 @@
   }
 .demo-banner{position:sticky;top:0;z-index:9999;background:#d4ff3f;color:#111;text-align:center;font-weight:800;padding:9px 12px;font-size:14px}
 .demo-wallet-tag{display:inline-block;background:#d4ff3f;color:#111;font-weight:800;font-size:11px;padding:3px 8px;border-radius:999px;margin-left:8px;vertical-align:middle}
+.real-wallet{margin-top:12px;padding:12px;border:1px dashed #999;border-radius:12px}
+.real-wallet-tag{display:inline-block;background:#fff;color:#111;font-weight:800;font-size:11px;padding:3px 8px;border-radius:999px;margin-right:8px;vertical-align:middle}
 </style>
 </head>
 <body id="top">
@@ -322,7 +324,7 @@
         <div class="ca-label"><span>CONTRACT ADDRESS</span><button type="button" id="copyCa">COPY</button></div>
         <div class="ca-addr" id="caAddr">0x9f2c7ab41e8d03f6a5c9b2d84e71f0a63c58d210</div>
       </div>
-      <button class="btn btn-lime" type="button" id="connectBtn">Connect Wallet</button><span class="demo-wallet-tag">DEMO WALLET</span> <button class="btn" id="demoResetBtn" type="button" style="margin-left:8px">Reset demo</button>
+      <button class="btn btn-lime" type="button" id="connectBtn">Connect Demo Wallet</button><span class="demo-wallet-tag">DEMO WALLET</span> <button class="btn" id="demoResetBtn" type="button" style="margin-left:8px">Reset demo</button>
     </div>
   </div>
 </header>
@@ -356,6 +358,7 @@
           <a class="btn btn-outline" href="#burn">Burn &amp; claim</a>
         </div>
         <p class="wallet-note" id="walletNote">Wallet not connected. Connect with MetaMask on Archive Chain to mint, burn, and claim.</p>
+<div class="real-wallet"><span class="real-wallet-tag">REAL WALLET</span> <button class="btn" id="realConnectBtn" type="button">Connect Real Wallet</button> <button class="btn" id="realDisconnectBtn" type="button" style="display:none">Disconnect real wallet</button><p class="status-line" id="realWalletStatus" aria-live="polite"></p><p class="muted">Real wallet is read-only: it only connects and checks the chain. Mint, burn and claim stay demo-simulated.</p></div>
         <div class="timers">
           <div class="timer-box"><div class="t-label">Mint closes in</div><div class="t-value" data-timer="mint">48:00:00</div></div>
           <div class="timer-box"><div class="t-label">Burn closes in</div><div class="t-value" data-timer="burn">59:45:28</div></div>
@@ -791,7 +794,7 @@ function demoRefreshButtons(){
   else if(state.claimable<=0){ claim.disabled=true; claim.textContent="Nothing to claim yet (demo)"; }
   else{ claim.disabled=false; claim.textContent="Claim "+fmt(state.claimable)+" $ARCH (demo)"; }
  }
- var cb=$("connectBtn"); if(cb) cb.textContent=state.connected?DEMO_ADDR:"Connect Wallet";
+ var cb=$("connectBtn"); if(cb) cb.textContent=state.connected?DEMO_ADDR:"Connect Demo Wallet";
  var wn=$("walletNote"); if(wn) wn.textContent=state.connected?"Demo wallet connected: "+DEMO_ADDR+" (simulasi, bukan wallet sungguhan). Mint, burn, dan klaim di bawah ini adalah demo.":"Demo wallet belum terhubung. Klik Connect Wallet untuk simulasi demo, tanpa MetaMask dan tanpa transaksi sungguhan.";
 }
 function demoRefreshRewards(){
@@ -981,6 +984,60 @@ $("demoResetBtn").addEventListener("click", function(){
  var sk=$("skipStatus"); if(sk) sk.textContent="";
  var ch=$("chainStatus"); if(ch) ch.textContent="";
 });
+
+/* ----- REAL WALLET: Robinhood Chain (satu tempat untuk ganti jaringan) ----- */
+/* Untuk beralih mainnet/testnet, cukup ubah blok konstanta ROBINHOOD_CHAIN ini. */
+var ROBINHOOD_CHAIN = {
+ CHAIN_ID: 4663,
+ CHAIN_ID_HEX: "0x1237",
+ CHAIN_NAME: "Robinhood Chain",
+ RPC_URL: "https://rpc.mainnet.chain.robinhood.com",
+ EXPLORER_URL: "https://robinhoodchain.blockscout.com",
+ NATIVE: { name: "Ether", symbol: "ETH", decimals: 18 }
+};
+var realWalletAddress = null;
+function realTruncate(addr){ return addr.slice(0,6) + "..." + addr.slice(-4); }
+function realShowStatus(msg){ var st=$("realWalletStatus"); if(st) st.textContent=msg; }
+function realUpdateButtons(){
+ var btn=$("realConnectBtn");
+ if(btn) btn.textContent = realWalletAddress ? realTruncate(realWalletAddress) + " - Robinhood Chain" : "Connect Real Wallet";
+ var dc=$("realDisconnectBtn");
+ if(dc) dc.style.display = realWalletAddress ? "" : "none";
+}
+async function realConnect(){
+ if(!window.ethereum){ realShowStatus("No wallet provider found. Open this site in a wallet browser or install MetaMask."); return; }
+ try{
+  var accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+  if(!accounts || !accounts.length) throw new Error("No accounts");
+  realWalletAddress = accounts[0];
+  var chainId = await window.ethereum.request({ method: "eth_chainId" });
+  if(chainId !== ROBINHOOD_CHAIN.CHAIN_ID_HEX){
+   try{
+    await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: ROBINHOOD_CHAIN.CHAIN_ID_HEX }] });
+   }catch(switchErr){
+    if(switchErr && switchErr.code === 4902){
+     await window.ethereum.request({ method: "wallet_addEthereumChain", params: [{ chainId: ROBINHOOD_CHAIN.CHAIN_ID_HEX, chainName: ROBINHOOD_CHAIN.CHAIN_NAME, nativeCurrency: ROBINHOOD_CHAIN.NATIVE, rpcUrls: [ROBINHOOD_CHAIN.RPC_URL], blockExplorerUrls: [ROBINHOOD_CHAIN.EXPLORER_URL] }] });
+    }else{ throw switchErr; }
+   }
+  }
+  realUpdateButtons();
+  realShowStatus("Real wallet connected: " + realTruncate(realWalletAddress) + " on Robinhood Chain (read-only, no transactions).");
+ }catch(err){
+  if(err && err.code === 4001){ realShowStatus("Wallet connection rejected. You can still use demo mode."); }
+  else{ realShowStatus("Could not connect wallet. You can still use demo mode."); }
+ }
+}
+$("realConnectBtn").addEventListener("click", realConnect);
+$("realDisconnectBtn").addEventListener("click", function(){
+ realWalletAddress = null; realUpdateButtons();
+ realShowStatus("Real wallet disconnected (display cleared). Demo mode is still available.");
+});
+if(window.ethereum && window.ethereum.on){
+ window.ethereum.on("accountsChanged", function(accounts){
+  if(!accounts || !accounts.length){ realWalletAddress = null; realUpdateButtons(); realShowStatus("Real wallet disconnected (display cleared). Demo mode is still available."); }
+  else{ realWalletAddress = accounts[0]; realUpdateButtons(); }
+ });
+}
 /* ----- Copy CA ----- */
   $("copyCa").addEventListener("click", function(){
     var addr = $("caAddr").textContent.trim();
