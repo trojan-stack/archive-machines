@@ -298,9 +298,12 @@
     .ticker-live .dot{ animation:none; }
     html{ scroll-behavior:auto; }
   }
+.demo-banner{position:sticky;top:0;z-index:9999;background:#d4ff3f;color:#111;text-align:center;font-weight:800;padding:9px 12px;font-size:14px}
+.demo-wallet-tag{display:inline-block;background:#d4ff3f;color:#111;font-weight:800;font-size:11px;padding:3px 8px;border-radius:999px;margin-left:8px;vertical-align:middle}
 </style>
 </head>
 <body id="top">
+<div class="demo-banner">DEMO MODE — simulasi, bukan transaksi sungguhan</div>
 
 <header>
   <div class="header-in">
@@ -319,7 +322,7 @@
         <div class="ca-label"><span>CONTRACT ADDRESS</span><button type="button" id="copyCa">COPY</button></div>
         <div class="ca-addr" id="caAddr">0x9f2c7ab41e8d03f6a5c9b2d84e71f0a63c58d210</div>
       </div>
-      <button class="btn btn-lime" type="button" id="connectBtn">Connect Wallet</button>
+      <button class="btn btn-lime" type="button" id="connectBtn">Connect Wallet</button><span class="demo-wallet-tag">DEMO WALLET</span> <button class="btn" id="demoResetBtn" type="button" style="margin-left:8px">Reset demo</button>
     </div>
   </div>
 </header>
@@ -327,7 +330,7 @@
 <div class="ticker" aria-hidden="true">
   <div class="ticker-live"><span class="dot"></span> LIVE · ARCHIVE CHAIN</div>
   <div class="ticker-track">
-    <div class="ticker-move" id="tickerMove">
+    <div class="ticker-move" id="tickerMove"><span>$ARCH <span class="demo-arch-price">$0.0420</span> <span class="demo-arch-change">▲0.00%</span></span><span>·</span>
       <span><b>ARCH</b> <span class="px">$0.004210</span> <span class="up">▲ 18.42%</span></span>
       <span><b>VAULT</b> <span class="px">$0.0001197</span> <span class="down">▼ 3.23%</span></span>
       <span><b>CACHE</b> <span class="px">$0.05466</span> <span class="up">▲ 33.55%</span></span>
@@ -443,13 +446,15 @@
             <div class="row"><span>Buy 10</span><span class="v">+10 FREE → 20 total</span></div>
             <div class="row"><span>Archives left (paid + free)</span><span class="v" id="freeWaiting">11,547</span></div>
             <div class="row"><span>Your archives</span><span class="v" id="yourCapsules">0</span></div>
+<div class="row"><span>Free drops waiting (demo)</span><span class="v" id="demoWaiting">0</span></div>
           </div>
           <p style="font-size:.85rem; color:var(--on-dark-dim);">Pick how many you want to buy on the right — the free twins are added automatically. When the 25,000 run out, the deal ends with them.</p>
-          <p class="status-line" id="claimStatus" aria-live="polite"></p>
+          <button class="btn btn-lime" id="claimFreeBtn" type="button">Claim Free (demo)</button>
+<p class="status-line" id="claimStatus" aria-live="polite"></p>
         </div>
         <div class="card">
           <h3>Buy &amp; Get Double</h3>
-          <p>Slide to pick how many you <b>buy</b> — you receive <b>double</b>. Or tap a archive in the line above to start from that one.</p>
+          <p>Slide to pick how many you <b>buy</b> — you receive <b>double</b>. Or tap an archive in the line above to start from that one.</p>
           <div class="skip-art">
             <img id="skipArt" src="archives.gif" alt="Artwork of the selected archive's tier" />
             <div>
@@ -478,7 +483,7 @@
   <section class="block" id="tiers">
     <div class="wrap">
       <div class="sec-head">
-        <h2 class="display">What's in a<br />archive</h2>
+        <h2 class="display">What's in an<br />archive</h2>
         <p class="sec-note">Four tiers in exact numbers. Legendary is the rarest pull in the archive — exactly one sits in every 100 archives of the line. Paid or free twin, every archive burns for the same full value below.</p>
       </div>
       <div class="tiers">
@@ -574,9 +579,11 @@
           <p>Burned archives convert the moment trading opens. Trading and claims start together.</p>
           <div class="rows">
             <div class="row"><span>Claimable</span><span class="v" id="claimable">0 $ARCH</span></div>
+<div class="row"><span>Claimed (demo)</span><span class="v" id="demoClaimed">0 $ARCH</span></div>
             <div class="row"><span>Claims open in</span><span class="v" data-timer="claims">66:18:01</span></div>
           </div>
           <button class="btn btn-outline" type="button" id="claimBtn" disabled style="color:var(--on-dark); border-color:var(--on-dark-dim);">Claims open in <span data-timer="claims">66:18:01</span></button>
+<p class="status-line" id="demoClaimStatus" aria-live="polite"></p>
         </div>
       </div>
     </div>
@@ -597,18 +604,18 @@
       </div>
       <div class="duo">
         <div class="card">
-          <h3>This hour's pot<br />0 ETH</h3>
+          <h3>This hour's pot<br /><span id="demoPot">0.42 ETH</span></h3>
           <div class="rows">
             <div class="row"><span>Paid out in</span><span class="v">Starts with trading</span></div>
           </div>
         </div>
         <div class="card">
           <h3>You</h3>
-          <p>Coming soon — your multiplier and rewards will appear here at launch.</p>
+          <p>Demo: multiplier dan reward dihitung dari archive yang kamu pegang (simulasi).</p>
           <div class="rows">
-            <div class="row"><span>Multiplier</span><span class="v">—</span></div>
-            <div class="row"><span>Rank</span><span class="v">—</span></div>
-            <div class="row"><span>Pending rewards</span><span class="v">—</span></div>
+            <div class="row"><span>Multiplier</span><span class="v" id="demoMult">1x · Reader</span></div>
+            <div class="row"><span>Rank</span><span class="v" id="demoRank">—</span></div>
+            <div class="row"><span>Pending rewards</span><span class="v" id="demoPending">0.0000 ETH</span></div>
           </div>
         </div>
       </div>
@@ -639,7 +646,7 @@
         <div class="seg-burn"></div><div class="seg-lp"></div><div class="seg-com"></div>
       </div>
       <div class="toke-legend">
-        <span><span class="sw" style="background:var(--ink)"></span>70% Archive archive burners</span>
+        <span><span class="sw" style="background:var(--ink)"></span>70% Archive burners</span>
         <span><span class="sw" style="background:#3d7a1e"></span>20% Liquidity pool</span>
         <span><span class="sw" style="background:var(--rare)"></span>10% Community &amp; airdrop</span>
       </div>
@@ -748,8 +755,69 @@
     inv: { common:0, rare:0, epic:0, legendary:0 },
     claimable: 0,
     connected: false,
-    cooldownUntil: 0
-  };
+    cooldownUntil: 0,
+    waiting: 0,
+    claimed: 0,
+    pot: 0.42,
+    archPrice: 0.042,
+    archStart: 0.042
+};
+/* ----- DEMO MODE: simulasi lokal, tanpa chain/wallet asli ----- */
+var DEMO_KEY = "archiveDemoV1";
+var DEMO_ADDR = "0xDEMO...0000";
+function demoSave(){ try{ localStorage.setItem(DEMO_KEY, JSON.stringify({left:state.left,pointer:state.pointer,selected:state.selected,inv:state.inv,claimable:state.claimable,connected:state.connected,waiting:state.waiting,claimed:state.claimed,pot:state.pot,archPrice:state.archPrice,archStart:state.archStart})); }catch(e){} }
+function demoLoad(){ try{ var d=JSON.parse(localStorage.getItem(DEMO_KEY)||"null"); if(!d) return; if(typeof d.left==="number") state.left=d.left; if(typeof d.pointer==="number") state.pointer=d.pointer; if(typeof d.selected==="number") state.selected=d.selected; if(d.inv){ if(typeof d.inv.common==="number") state.inv.common=d.inv.common; if(typeof d.inv.rare==="number") state.inv.rare=d.inv.rare; if(typeof d.inv.epic==="number") state.inv.epic=d.inv.epic; if(typeof d.inv.legendary==="number") state.inv.legendary=d.inv.legendary; } if(typeof d.claimable==="number") state.claimable=d.claimable; if(typeof d.connected==="boolean") state.connected=d.connected; if(typeof d.waiting==="number") state.waiting=d.waiting; if(typeof d.claimed==="number") state.claimed=d.claimed; if(typeof d.pot==="number") state.pot=d.pot; if(typeof d.archPrice==="number") state.archPrice=d.archPrice; if(typeof d.archStart==="number") state.archStart=d.archStart; }catch(e){} }
+function demoTx(){ var h=""; var c="0123456789abcdef"; for(var i=0;i<8;i++) h+=c[Math.floor(Math.random()*16)]; return "0xDEMO"+h+"...0000"; }
+function demoMintOpen(){ return (Date.now()-t0) < MINT_MS; }
+function demoBurnOpen(){ return (Date.now()-t0) < BURN_MS; }
+function demoTotalInv(){ return state.inv.common+state.inv.rare+state.inv.epic+state.inv.legendary; }
+function demoInvValue(){ return state.inv.common*3000+state.inv.rare*9000+state.inv.epic*30000+state.inv.legendary*160000; }
+function demoRefreshButtons(){
+ var total=demoTotalInv();
+ var skip=$("skipBtn"); if(skip) skip.disabled=!state.connected;
+ var free=$("claimFreeBtn"); if(free) free.disabled=!state.connected;
+ var w=$("demoWaiting"); if(w) w.textContent=fmt(state.waiting);
+ var dc=$("demoClaimed"); if(dc) dc.textContent=fmt(state.claimed)+" $ARCH";
+ var burn=$("burnBtn");
+ if(burn){
+  if(!demoBurnOpen()){ burn.disabled=true; burn.textContent="Burn closed (demo)"; }
+  else if(!state.connected){ burn.disabled=true; burn.textContent="Connect demo wallet to burn"; }
+  else if(total===0){ burn.disabled=true; burn.textContent=state.claimable>0?"All archives burned (demo)":"No archives to burn yet (demo)"; }
+  else{ burn.disabled=false; burn.textContent="Burn "+total+" archive"+(total===1?"":"s")+" - "+fmt(demoInvValue())+" $ARCH (demo)"; }
+ }
+ var claim=$("claimBtn");
+ if(claim){
+  if(!state.connected){ claim.disabled=true; claim.textContent="Connect demo wallet to claim"; }
+  else if(state.claimable<=0){ claim.disabled=true; claim.textContent="Nothing to claim yet (demo)"; }
+  else{ claim.disabled=false; claim.textContent="Claim "+fmt(state.claimable)+" $ARCH (demo)"; }
+ }
+ var cb=$("connectBtn"); if(cb) cb.textContent=state.connected?DEMO_ADDR:"Connect Wallet";
+ var wn=$("walletNote"); if(wn) wn.textContent=state.connected?"Demo wallet connected: "+DEMO_ADDR+" (simulasi, bukan wallet sungguhan). Mint, burn, dan klaim di bawah ini adalah demo.":"Demo wallet belum terhubung. Klik Connect Wallet untuk simulasi demo, tanpa MetaMask dan tanpa transaksi sungguhan.";
+}
+function demoRefreshRewards(){
+ var total=demoTotalInv();
+ var mult=1, rank="Reader";
+ if(total>=20){ mult=10; rank="Grand Archivist"; }
+ else if(total>=10){ mult=5; rank="Archivist"; }
+ else if(total>=5){ mult=2; rank="Operator"; }
+ var potEl=$("demoPot"); if(potEl) potEl.textContent=state.pot.toFixed(2)+" ETH";
+ var mEl=$("demoMult"); if(mEl) mEl.textContent=mult+"x - "+rank;
+ var rEl=$("demoRank"); if(rEl) rEl.textContent=total===0?"- (demo)":"#"+Math.max(1,250-total)+" (demo)";
+ var pending=total*mult*0.001*(state.pot/0.42);
+ var pEl=$("demoPending"); if(pEl) pEl.textContent=pending.toFixed(4)+" ETH (demo)";
+}
+function demoRefreshTicker(){
+ var els=document.querySelectorAll(".demo-arch-price");
+ for(var i=0;i<els.length;i++) els[i].textContent="$"+state.archPrice.toFixed(4);
+ var ch=(state.archPrice-state.archStart)/state.archStart*100;
+ var els2=document.querySelectorAll(".demo-arch-change");
+ for(var j=0;j<els2.length;j++) els2[j].textContent=(ch>=0?"+":"-")+Math.abs(ch).toFixed(2)+"%";
+}
+demoLoad();
+setInterval(function(){ if(demoMintOpen() && state.waiting<50){ state.waiting++; var w=$("demoWaiting"); if(w) w.textContent=fmt(state.waiting); demoSave(); } },1000);
+setInterval(function(){ state.pot=Math.min(9.99,state.pot+0.001); demoRefreshRewards(); demoSave(); },10000);
+setInterval(function(){ var d=(Math.random()-0.5)*0.02; state.archPrice=Math.max(0.01,Math.min(0.10,state.archPrice*(1+d))); demoRefreshTicker(); demoSave(); },3000);
+
   function fmt(n){ return n.toLocaleString("en-US"); }
   function $(id){ return document.getElementById(id); }
 
@@ -845,40 +913,75 @@
     }
     state.left = Math.max(0, state.left - got.length);
     state.pointer = Math.max(state.pointer, fromIdx + got.length);
-    refreshTaken(); refreshCounts(); updateSkip();
+    refreshTaken(); refreshCounts(); updateSkip(); refreshTaken(); demoRefreshButtons(); demoRefreshRewards(); demoRefreshTicker();
     if (statusEl) statusEl.textContent = verb + " " + got.join(", ") + ". Find them under Burn & Claim.";
     return got.length;
   }
   $("skipBtn").addEventListener("click", function(){
-    var n = parseInt($("skipRange").value, 10);
-    var total = n * 2;
-    var startIdx = state.selected;
-    // Split the status message into paid vs free for clarity
-    var statusEl = $("skipStatus");
-    var gotCount = takeCapsules(startIdx, total, null, "");
-    if (gotCount === 0){
-      statusEl.textContent = "This window of the line is empty — the machines are restocking the queue.";
-      return;
-    }
-    var paidCount = Math.min(n, gotCount);
-    var freeCount = Math.max(0, gotCount - paidCount);
-    statusEl.textContent = "BOGO done: you bought " + paidCount + " and got " + freeCount + " FREE — " + gotCount + " archives total (#" + (START + startIdx) + " – #" + (START + startIdx + gotCount - 1) + "). Find them under Burn & Claim.";
-    var claimEl = $("claimStatus");
-    if (claimEl) claimEl.textContent = "Last deal: Buy " + paidCount + " Get " + freeCount + " Free = " + gotCount + " archives in your wallet.";
-  });
+ var statusEl=$("skipStatus");
+ if(!state.connected){ if(statusEl) statusEl.textContent="Demo: hubungkan demo wallet dulu sebelum Skip the Line (simulasi)."; return; }
+ var n=parseInt($("skipRange").value,10);
+ var total=n*2;
+ var startIdx=state.selected;
+ var gotCount=takeCapsules(startIdx,total,null,"");
+ if(gotCount===0){ if(statusEl) statusEl.textContent="Demo: jendela antrean ini kosong - mesin sedang mengisi ulang antrean (simulasi)."; return; }
+ var paidCount=Math.min(n,gotCount);
+ var freeCount=Math.max(0,gotCount-paidCount);
+ var tx=demoTx();
+ if(statusEl) statusEl.textContent="Demo: BOGO selesai - kamu membeli "+paidCount+" dan mendapat "+freeCount+" GRATIS - total "+gotCount+" archive (#"+(START+startIdx)+" - #"+(START+startIdx+gotCount-1)+"). Tx demo: "+tx+" (simulasi, bukan transaksi sungguhan).";
+ var claimEl=$("claimStatus");
+ if(claimEl) claimEl.textContent="Demo: deal terakhir - Buy "+paidCount+" Get "+freeCount+" Free = "+gotCount+" archive di demo wallet kamu.";
+ demoSave(); demoRefreshButtons(); demoRefreshRewards();
+});
 
   /* ----- Burn ----- */
   $("burnBtn").addEventListener("click", function(){
-    var val = state.inv.common*3000 + state.inv.rare*9000 + state.inv.epic*30000 + state.inv.legendary*160000;
-    var total = state.inv.common + state.inv.rare + state.inv.epic + state.inv.legendary;
-    if (total === 0) return;
-    state.claimable += val;
-    state.inv = { common:0, rare:0, epic:0, legendary:0 };
-    refreshCounts();
-    $("burnStatus").textContent = "Burned " + total + " archive" + (total === 1 ? "" : "s") + " — " + fmt(val) + " $ARCH is now claimable when claims open.";
-  });
+ var total=demoTotalInv();
+ if(!state.connected){ $("burnStatus").textContent="Demo: hubungkan demo wallet dulu untuk burn (simulasi)."; return; }
+ if(!demoBurnOpen()){ $("burnStatus").textContent="Demo: jendela burn sudah tutup (simulasi)."; demoRefreshButtons(); return; }
+ if(total===0) return;
+ var val=demoInvValue();
+ state.claimable+=val;
+ state.inv={common:0,rare:0,epic:0,legendary:0};
+ refreshCounts(); demoSave(); demoRefreshButtons(); demoRefreshRewards();
+ $("burnStatus").textContent="Demo: kamu membakar "+total+" archive - "+fmt(val)+" $ARCH sekarang bisa diklaim (simulasi, bukan transaksi sungguhan).";
+});
 
-  /* ----- Copy CA ----- */
+  $("claimBtn").addEventListener("click", function(){
+ var st=$("demoClaimStatus");
+ if(!state.connected){ if(st) st.textContent="Demo: hubungkan demo wallet dulu untuk klaim (simulasi)."; return; }
+ if(state.claimable<=0){ if(st) st.textContent="Demo: belum ada $ARCH yang bisa diklaim (simulasi)."; return; }
+ var amt=state.claimable; state.claimed+=amt; state.claimable=0;
+ refreshCounts(); demoSave(); demoRefreshButtons(); demoRefreshRewards();
+ if(st) st.textContent="Demo: kamu mengklaim "+fmt(amt)+" $ARCH ke saldo demo (total diklaim: "+fmt(state.claimed)+" $ARCH). Ini simulasi, bukan transaksi sungguhan.";
+});
+$("claimFreeBtn").addEventListener("click", function(){
+ var statusEl=$("claimStatus");
+ if(!state.connected){ if(statusEl) statusEl.textContent="Demo: hubungkan demo wallet dulu untuk klaim free drop (simulasi)."; return; }
+ if(!demoMintOpen()){ if(statusEl) statusEl.textContent="Demo: jendela mint sudah tutup, free drop berhenti (simulasi)."; return; }
+ if(state.waiting<=0){ if(statusEl) statusEl.textContent="Demo: belum ada free drop yang menunggu - tunggu beberapa detik (simulasi)."; return; }
+ var before={common:state.inv.common,rare:state.inv.rare,epic:state.inv.epic,legendary:state.inv.legendary};
+ var n=state.waiting;
+ var got=takeCapsules(state.pointer,n,null,"");
+ if(got===0){ if(statusEl) statusEl.textContent="Demo: antrean 50 archive sudah habis (simulasi)."; return; }
+ state.waiting=0; var w=$("demoWaiting"); if(w) w.textContent="0";
+ demoSave(); demoRefreshButtons(); demoRefreshRewards();
+ if(statusEl) statusEl.textContent="Demo: kamu mengklaim "+got+" free archive ("+(state.inv.common-before.common)+" Archive, "+(state.inv.rare-before.rare)+" Rare, "+(state.inv.epic-before.epic)+" Epic, "+(state.inv.legendary-before.legendary)+" Legendary). Ini simulasi, bukan transaksi sungguhan.";
+});
+$("demoResetBtn").addEventListener("click", function(){
+ try{ localStorage.removeItem(DEMO_KEY); }catch(e){}
+ state.left=11547; state.pointer=0; state.selected=0;
+ state.inv={common:0,rare:0,epic:0,legendary:0};
+ state.claimable=0; state.connected=false; state.waiting=0; state.claimed=0;
+ state.pot=0.42; state.archPrice=0.042; state.archStart=0.042;
+ refreshTaken(); refreshCounts(); updateSkip(); demoRefreshButtons(); demoRefreshRewards(); demoRefreshTicker();
+ var a=$("claimStatus"); if(a) a.textContent="Demo direset - semua saldo demo kembali ke awal (simulasi).";
+ var b=$("burnStatus"); if(b) b.textContent="";
+ var c=$("demoClaimStatus"); if(c) c.textContent="Demo direset (simulasi).";
+ var sk=$("skipStatus"); if(sk) sk.textContent="";
+ var ch=$("chainStatus"); if(ch) ch.textContent="";
+});
+/* ----- Copy CA ----- */
   $("copyCa").addEventListener("click", function(){
     var addr = $("caAddr").textContent.trim();
     var btn = this;
@@ -890,17 +993,20 @@
 
   /* ----- Connect wallet (front-end state) ----- */
   $("connectBtn").addEventListener("click", function(){
-    state.connected = !state.connected;
-    this.textContent = state.connected ? "0x9f2c…d210" : "Connect Wallet";
-    $("walletNote").textContent = state.connected
-      ? "Wallet connected: 0x9f2c…d210 on Archive Chain. Mint, burn, and claim below."
-      : "Wallet not connected. Connect with MetaMask on Archive Chain to mint, burn, and claim.";
-  });
+ if(state.connected){
+  state.connected=false; demoSave(); demoRefreshButtons(); demoRefreshRewards();
+  $("chainStatus").textContent="Demo wallet terputus (demo).";
+  return;
+ }
+ var btn=this; btn.disabled=true; btn.textContent="Connecting (demo)...";
+ setTimeout(function(){
+  state.connected=true; btn.disabled=false; demoSave(); demoRefreshButtons(); demoRefreshRewards();
+  $("chainStatus").textContent="Demo: Archive Chain (demo) siap - ini simulasi, bukan chain sungguhan.";
+ },1000);
+});
   $("addChainBtn").addEventListener("click", function(){
-    $("chainStatus").textContent = state.connected
-      ? "Archive Chain is already active in your wallet."
-      : "Connect your wallet first — the network adds itself in one tap after that.";
-  });
+ $("chainStatus").textContent="Archive Chain (demo) ditambahkan";
+});
 
   /* ----- Timers ----- */
   var t0 = Date.now();
@@ -923,6 +1029,7 @@
   }
   tickTimers();
   setInterval(tickTimers, 1000);
+setInterval(demoRefreshButtons, 5000);
 
   /* ----- Duplicate ticker content for a seamless loop ----- */
   var tm = $("tickerMove");
@@ -930,6 +1037,9 @@
 
   refreshCounts();
   updateSkip();
+ demoSave();
+ demoRefreshButtons();
+ demoRefreshRewards();
 })();
 </script>
 </body>
